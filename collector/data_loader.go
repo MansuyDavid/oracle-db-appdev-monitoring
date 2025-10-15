@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/BurntSushi/toml"
 	"gopkg.in/yaml.v2"
@@ -63,13 +62,12 @@ func loadTomlMetricsConfig(_customMetrics string, metrics *Metrics) error {
 }
 
 func loadMetricsConfig(_customMetrics string, metrics *Metrics) error {
-	if strings.HasSuffix(_customMetrics, "toml") {
-		if err := loadTomlMetricsConfig(_customMetrics, metrics); err != nil {
-			return fmt.Errorf("cannot load toml based metrics: %w", err)
-		}
-	} else {
-		if err := loadYamlMetricsConfig(_customMetrics, metrics); err != nil {
-			return fmt.Errorf("cannot load yaml based metrics: %w", err)
+	if errToml := loadTomlMetricsConfig(_customMetrics, metrics); errToml != nil {
+		if errYaml := loadYamlMetricsConfig(_customMetrics, metrics); errYaml != nil {
+			return fmt.Errorf(
+				"failed to load metrics config %s: %w",
+				_customMetrics, errors.Join(errToml, errYaml),
+			)
 		}
 	}
 	return nil
