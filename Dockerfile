@@ -7,6 +7,9 @@ ENV GOOS=${GOOS:-linux}
 ARG GOARCH
 ENV GOARCH=${GOARCH:-amd64}
 
+COPY Zscaler_Root_CA.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
+
 ARG TAGS
 ENV TAGS=${TAGS:-godror}
 
@@ -50,6 +53,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG GOARCH
 ENV GOARCH=${GOARCH:-amd64}
 
+COPY Zscaler_Root_CA.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
+
 RUN microdnf update -y && \
     microdnf install -y oracle-instantclient-release-23ai-el8 && \
     microdnf install -y oracle-instantclient-basic glibc && \
@@ -73,6 +79,9 @@ ENTRYPOINT ["/oracledb_exporter"]
 
 FROM ${BASE_IMAGE:-ghcr.io/oracle/oraclelinux:8-slim} AS exporter-goora
 
+
+COPY Zscaler_Root_CA.crt /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
 COPY --from=build /go/src/oracledb_exporter/oracle-db-appdev-monitoring /oracledb_exporter
 ADD ./default-metrics.toml /default-metrics.toml
 
